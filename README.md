@@ -2,7 +2,7 @@
 This project uses news database to analyze user experience and figure out the popular articles and authors.
 It also shows the days with the most request errors.
 
-## The views
+# The views
 For ease, these views were created.
 
 ## article_log View
