@@ -36,7 +36,21 @@ def get_popular_authors():
     db.close()
     return authors
 
+def get_error_days():
+    """ Returns the day with more than 1% errors"""
+    db = psycopg2.connect(database=DBNAME)
+    c = db.cursor()
+    c.execute("select time::date from "+
+    "(select time::date, sum(num)/(1189674)*100 as err_per from "+
+    "(select time::date , count(*) as num from"+
+    "(select * from log where status like '4%' or status like '5%') as subq"+
+    " group by time::date order by num DESC) as sub group by time::date "+
+    "order by err_per DESC) as subq3 where err_per > 1;")
+    days = c.fetchall()
+    db.close()
+    return days
 
 if __name__ == '__main__':
     print get_popular_articles()
     print get_popular_authors()
+    print get_error_days()
