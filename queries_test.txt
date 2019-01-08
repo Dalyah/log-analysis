@@ -1,0 +1,37 @@
+##### Part 1
+# article_log
+ CREATE VIEW article_log AS select * from log where path like '%article/%';
+
+
+# article_count View
+CREATE VIEW article_count AS select path , count(*) as views from article_log group by path order by views DESC;
+
+#Populr 3 Articles
+ select path from article_count limit 3;
+select substring(path from 10) from article_count limit 3;
+
+####
+
+#author_count VIEW
+ CREATE VIEW author_count AS  select article_count.path, article_count.views, authors.name as author from article_count, articles, authors WHERE substring(article_count.path from 10) = articles.slug and authors.id = articles.author;
+
+#popular authors
+select sum(views) author_views, author from author_count grouP by author order by author_views DESC limit 3;
+ ---- Only authors
+select author from (select sum(views) author_views, author from author_count grouP by author order by author_views DESC limit 3) as subq;
+
+####
+select time, count(*) as num from( select * from log where status like '%4%') as subq group by time;
+
+select time::date , count(*) as num from( select * from log where status like '%4%') as subq group by time::date order by num DESC;
+
+
+#requests VIEW:
+CREATE VIEW requests AS select count(*) from log;
+
+select time::date, per(num) from (select time::date , count(*) as num from( select * from log where status like '%4%') as subq group by time::date order by num DESC) as sub group by time::date order by num;
+
+select * from log where status like '4%' or status like '5%'
+
+select time::date from (select time::date, sum(num)/(1189674)*s100 as err_per from (select time::date , count(*) as num from( select * from log where status like '4%' or status like '5%') as subq group by time::date order by num DESC) as sub group by time::date order by err_per DESC) as subq3 where err_per > 1;
+ 
