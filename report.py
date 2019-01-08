@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import psycopg2
 import bleach
@@ -35,16 +35,13 @@ def get_error_days():
     """ Returns the days with more than 1% errors"""
     db = psycopg2.connect(database=DBNAME)
     c = db.cursor()
-    # calculate num of requests
-    c.execute("select count(*) from log;")
-    num_requests = c.fetchall()[0][0]
     c.execute(
-        "select time::date, err_per from " +
-        "(select time::date, sum(num)/(" + str(num_requests) + ")*100 as" +
-        " err_per from (select time::date , count(*) as num from" +
-        "(select * from log where status like '4%' or status like '5%')" +
-        " as subq group by time::date order by num DESC) as sub group by" +
-        " time::date order by err_per DESC) as subq3 where err_per > 1;")
+        "select time::date, err_perc from (select time::date, " +
+        "sum(CAST(num AS float)/ CAST(num_requests AS float))*100 as" +
+        " err_perc from (select time_err.time::date, num, num_requests from " +
+        "time_err, time_req where time_err.time::date = time_req.time::date)" +
+        " as subq group by time::date order by err_perc DESC) as subq2" +
+        " where err_perc >1.1;")
     days = c.fetchall()
     db.close()
     return days
